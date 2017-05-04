@@ -14,7 +14,7 @@ std::string make_filename(int i)
 
 int main()
 {
-    std::string filename = "test.jpg";
+    std::string filename = "cat_hd.jpg";
     cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
     if (!image.data)
     {
@@ -22,9 +22,10 @@ int main()
         exit(1);
     }
 
-    int dr = 500, dc = 500;
+    int dr = 1000, dc = 1000;
     int r = 0, c = 0;
 
+    weighted_int_t *dp_buffer = new weighted_int_t[image.cols * image.rows];
     while (r + c < dr + dc)
     {
         //fprintf(stderr, "\rProcessing... %5.2f%%", (r + c) * 100.0 / (dr + dc));
@@ -44,20 +45,20 @@ int main()
 
         if (r == dr) // c != dc
         {
-            path_result p = find_vert_seam(energy_image);
+            path_result p = find_vert_seam(energy_image, dp_buffer);
             image = remove_path_vert(image, p.path);
             ++c;
         }
         else if (c == dc) // r != dr
         {
-            path_result p = find_hori_seam(energy_image);
+            path_result p = find_hori_seam(energy_image, dp_buffer);
             image = remove_path_hori(image, p.path);
             ++r;
         }
         else // r != dr && c != dc
         {
-            path_result pv = find_vert_seam(energy_image),
-                        ph = find_hori_seam(energy_image);
+            path_result pv = find_vert_seam(energy_image, dp_buffer),
+                        ph = find_hori_seam(energy_image, dp_buffer);
             // Ì°ÐÄ
             if (pv.total_energy < ph.total_energy)
             {
@@ -86,6 +87,7 @@ int main()
         
         //cv::imwrite(make_filename(i), image);
     }
+    delete [] dp_buffer;
     cv::imwrite(filename + ".result.png", image);
     return 0;
 }

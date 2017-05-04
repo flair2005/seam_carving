@@ -18,8 +18,8 @@ typedef weighted_value<int, int> weighted_int_t;
 // find a horizontal seam whose energy is minimum
 template <typename COMPARE_FUNC = std::less<int> >
 path_result find_hori_seam(const cv::Mat &energy_image,
-                           COMPARE_FUNC cmp = std::less<int>(),
-                           weighted_int_t *buffer = nullptr)
+                           weighted_int_t *buffer = nullptr,
+                           COMPARE_FUNC cmp = std::less<int>())
 {
     weighted_int_t *dp;
     if (!buffer)
@@ -103,8 +103,8 @@ path_result find_hori_seam(const cv::Mat &energy_image,
 // find a vertical seam whose energy is minimum
 template <typename COMPARE_FUNC = std::less<int> >
 path_result find_vert_seam(const cv::Mat &energy_image,
-                           COMPARE_FUNC cmp = std::less<int>(),
-                           weighted_int_t *buffer = nullptr)
+                           weighted_int_t *buffer = nullptr,
+                           COMPARE_FUNC cmp = std::less<int>())
 {
     weighted_int_t *dp;
     if (!buffer)
