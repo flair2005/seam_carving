@@ -22,8 +22,12 @@ int main()
         exit(1);
     }
 
-    for (int i = 0; i < 600; ++i)
+    int dr = 500, dc = 500;
+    int r = 0, c = 0;
+
+    while (r + c < dr + dc)
     {
+        //fprintf(stderr, "\rProcessing... %5.2f%%", (r + c) * 100.0 / (dr + dc));
         cv::Mat gray_image;
         cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
         //cv::imwrite("gray_image.png", gray_image);
@@ -37,10 +41,40 @@ int main()
         cv::convertScaleAbs(grad_y, grad_abs_y);
         cv::Mat energy_image;
         cv::addWeighted(grad_abs_x, 0.5, grad_abs_y, 0.5, 0.0, energy_image);
+
+        if (r == dr) // c != dc
+        {
+            path_result p = find_vert_seam(energy_image);
+            image = remove_path_vert(image, p.path);
+            ++c;
+        }
+        else if (c == dc) // r != dr
+        {
+            path_result p = find_hori_seam(energy_image);
+            image = remove_path_hori(image, p.path);
+            ++r;
+        }
+        else // r != dr && c != dc
+        {
+            path_result pv = find_vert_seam(energy_image),
+                        ph = find_hori_seam(energy_image);
+            // Ì°ÐÄ
+            if (pv.total_energy < ph.total_energy)
+            {
+                image = remove_path_vert(image, pv.path);
+                ++c;
+                printf("|");
+            }
+            else
+            {
+                image = remove_path_hori(image, ph.path);
+                ++r;
+                printf("-");
+            }
+        }
         
         //cv::imwrite("energy_image.png", energy_image);
 
-        path_result ph = find_min_energy_path_hori(energy_image);
         // TODO: ey = find_min_energy_path_y(energy_image_y);
 
         /*for (int x = 0; x < image.cols; ++x)
@@ -50,9 +84,8 @@ int main()
             image.at<unsigned char>(ph.path[x], 3 * x + 2) = 255;
         }*/
         
-        image = remove_path_hori(image, ph.path);
-        cv::imwrite(make_filename(i), image);
+        //cv::imwrite(make_filename(i), image);
     }
-    cv::imwrite("result.png", image);
+    cv::imwrite(filename + ".result.png", image);
     return 0;
 }

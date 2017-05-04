@@ -15,11 +15,11 @@ struct path_result
 
 typedef weighted_value<int, int> weighted_int_t;
 
-// find a horizontal path whose energy is minimum
+// find a horizontal seam whose energy is minimum
 template <typename COMPARE_FUNC = std::less<int> >
-path_result find_min_energy_path_hori(const cv::Mat &energy_image,
-                                      COMPARE_FUNC cmp = std::less<int>(),
-                                      weighted_int_t *buffer = nullptr)
+path_result find_hori_seam(const cv::Mat &energy_image,
+                           COMPARE_FUNC cmp = std::less<int>(),
+                           weighted_int_t *buffer = nullptr)
 {
     weighted_int_t *dp;
     if (!buffer)
@@ -100,7 +100,94 @@ path_result find_min_energy_path_hori(const cv::Mat &energy_image,
     return path_result { std::move(energy_min_path), e_min.weight };
 }
 
+// find a vertical seam whose energy is minimum
+template <typename COMPARE_FUNC = std::less<int> >
+path_result find_vert_seam(const cv::Mat &energy_image,
+                           COMPARE_FUNC cmp = std::less<int>(),
+                           weighted_int_t *buffer = nullptr)
+{
+    weighted_int_t *dp;
+    if (!buffer)
+    {
+        dp = new weighted_int_t[energy_image.rows * energy_image.cols];
+    }
+    else
+    {
+        dp = buffer;
+    }
+
+    // first level: init
+    for (int x = 1; x < energy_image.cols - 1; ++x)
+    {
+        int e = energy_image.at<unsigned char>(0, x);
+        dp[x] = weighted_int_t{ e, -1 };
+    }
+
+    // dp
+    weighted_int_t *last_level = dp, *current_level = dp + energy_image.cols;
+    for (int y = 1; y < energy_image.rows; ++y)
+    {
+        for (int x = 1; x < energy_image.cols - 1; ++x)
+        {
+            weighted_int_t &e_min = current_level[x];
+
+            // (x, y - 1)
+            e_min.weight = last_level[x].weight;
+            e_min.value = x;
+
+            // (x - 1, y - 1)
+            if (x - 1 >= 1 && cmp(last_level[x - 1].weight, e_min.weight))
+            {
+                e_min.weight = last_level[x - 1].weight;
+                e_min.value = x - 1;
+            }
+
+            // (x + 1, y - 1)
+            if (x + 1 < energy_image.cols - 1 && cmp(last_level[x + 1].weight, e_min.weight))
+            {
+                e_min.weight = last_level[x + 1].weight;
+                e_min.value = x + 1;
+            }
+
+            short e = energy_image.at<unsigned char>(y, x);
+            e_min.weight += e;
+        }
+
+        last_level += energy_image.cols;
+        current_level += energy_image.cols;
+    }
+
+    // last level: find minimum.
+    weighted_int_t e_min{ last_level[1].weight, 1 };
+    for (int x = 2; x < energy_image.cols - 1; ++x)
+    {
+        if (cmp(last_level[x].weight, e_min.weight))
+        {
+            e_min.weight = last_level[x].weight;
+            e_min.value = x;
+        }
+    }
+
+    // backtrace
+    std::vector<int> energy_min_path(energy_image.rows);
+    energy_min_path[energy_image.rows - 1] = e_min.value;
+    for (int y = energy_image.rows - 2; y >= 0; --y)
+    {
+        energy_min_path[y] = last_level[energy_min_path[y + 1]].value;
+        last_level -= energy_image.cols;
+    }
+
+    if (!buffer)
+    {
+        delete[] dp;
+    }
+
+    return path_result{ std::move(energy_min_path), e_min.weight };
+}
+
 cv::Mat remove_path_hori(const cv::Mat &image, const std::vector<int> &path);
-cv::Mat dup_path_hori(const cv::Mat &image, const std::vector<int> &path);
+cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path);
+cv::Mat remove_path_vert(const cv::Mat &image, const std::vector<int> &path);
+// cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path);
 
 #endif // _SEAM_CARVING_HPP_
