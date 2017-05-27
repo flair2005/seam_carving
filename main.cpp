@@ -89,7 +89,7 @@ int main()
     //test_insert();
     //return 0;
 
-    std::string filename = "testcase/twd2.jpg";
+    std::string filename = "testcase/1.jpg";
     cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
     if (!image.data)
     {
@@ -110,7 +110,7 @@ int main()
 
         if (r + c == 0)
         {
-            cv::imwrite("energy_image.png", energy_image);
+            cv::imwrite("energy_image.result.png", energy_image);
         }
 
         if (r == dr) // c != dc
