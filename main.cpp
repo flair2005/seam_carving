@@ -52,7 +52,7 @@ void test_insert()
         {
             path_result pv = find_vert_seam(energy_image, dp_buffer),
                 ph = find_hori_seam(energy_image, dp_buffer);
-            // Ì°ÐÄ
+            // è´ªå¿ƒ
             if (pv.total_energy < ph.total_energy)
             {
                 image = remove_path_vert(image, pv.path);
@@ -86,10 +86,10 @@ void test_insert()
 
 int main()
 {
-    test_insert();
-    return 0;
+    //test_insert();
+    //return 0;
 
-    std::string filename = "cat.jpg";
+    std::string filename = "testcase/twd2.jpg";
     cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
     if (!image.data)
     {
@@ -97,7 +97,7 @@ int main()
         exit(1);
     }
 
-    int dr = 100, dc = 100;
+    int dr = 220, dc = 300;
     int r = 0, c = 0;
 
     weighted_int_t *dp_buffer = new weighted_int_t[(image.cols + 1) * (image.rows + 1)];
@@ -106,41 +106,45 @@ int main()
         //fprintf(stderr, "\rProcessing... %5.2f%%", (r + c) * 100.0 / (dr + dc));
         cv::Mat gray_image;
         cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
-        //cv::imwrite("gray_image.png", gray_image);
         cv::Mat energy_image = sobel_energy(gray_image);
+
+        if (r + c == 0)
+        {
+            cv::imwrite("energy_image.png", energy_image);
+        }
 
         if (r == dr) // c != dc
         {
             path_result p = find_vert_seam(energy_image, dp_buffer);
             image = remove_path_vert(image, p.path);
             ++c;
+            fprintf(stderr, "|");
         }
         else if (c == dc) // r != dr
         {
             path_result p = find_hori_seam(energy_image, dp_buffer);
             image = remove_path_hori(image, p.path);
             ++r;
+            fprintf(stderr, "-");
         }
         else // r != dr && c != dc
         {
             path_result pv = find_vert_seam(energy_image, dp_buffer),
                         ph = find_hori_seam(energy_image, dp_buffer);
-            // Ì°ÐÄ
+            // è´ªå¿ƒ
             if (pv.total_energy < ph.total_energy)
             {
                 image = remove_path_vert(image, pv.path);
                 ++c;
-                printf("|");
+                fprintf(stderr, "|");
             }
             else
             {
                 image = remove_path_hori(image, ph.path);
                 ++r;
-                printf("-");
+                fprintf(stderr, "-");
             }
         }
-        
-        //cv::imwrite("energy_image.png", energy_image);
 
         // TODO: ey = find_min_energy_path_y(energy_image_y);
 

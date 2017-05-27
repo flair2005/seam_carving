@@ -15,6 +15,7 @@ struct path_result
 };
 
 typedef weighted_value<int, int> weighted_int_t;
+typedef short energy_t;
 
 // find a horizontal seam whose energy is minimum
 template <typename COMPARE_FUNC = std::less<int> >
@@ -36,7 +37,7 @@ path_result find_hori_seam(const cv::Mat &energy_image,
     // first level: init
     for (int y = 1; y < energy_image.rows - 1; ++y)
     {
-        int e = energy_image.at<unsigned char>(y, 0);
+        energy_t e = energy_image.at<energy_t>(y, 0);
         dp[y] = weighted_int_t { e, -1 };
     }
 
@@ -66,7 +67,7 @@ path_result find_hori_seam(const cv::Mat &energy_image,
                 e_min.value = y + 1;
             }
 
-            short e = energy_image.at<unsigned char>(y, x);
+            energy_t e = energy_image.at<energy_t>(y, x);
             e_min.weight += e;
         }
 
@@ -134,7 +135,7 @@ path_result find_vert_seam(const cv::Mat &energy_image,
     // first level: init
     for (int x = 1; x < energy_image.cols - 1; ++x)
     {
-        int e = energy_image.at<unsigned char>(0, x);
+        energy_t e = energy_image.at<energy_t>(0, x);
         dp[x] = weighted_int_t{ e, -1 };
     }
 
@@ -164,7 +165,7 @@ path_result find_vert_seam(const cv::Mat &energy_image,
                 e_min.value = x + 1;
             }
 
-            short e = energy_image.at<unsigned char>(y, x);
+            energy_t e = energy_image.at<energy_t>(y, x);
             e_min.weight += e;
         }
 
@@ -215,7 +216,7 @@ path_result find_vert_seam(const cv::Mat &energy_image,
 cv::Mat remove_path_hori(const cv::Mat &image, const std::vector<int> &path);
 cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path);
 cv::Mat remove_path_vert(const cv::Mat &image, const std::vector<int> &path);
-// cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path);
+// cv::Mat insert_path_vert(const cv::Mat &image, const std::vector<int> &path);
 cv::Mat sobel_energy(const cv::Mat &gray_image);
 cv::Mat laplacian_energy(const cv::Mat &gray_image);
 

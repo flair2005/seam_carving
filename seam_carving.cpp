@@ -2,7 +2,7 @@
 
 cv::Mat remove_path_hori(const cv::Mat &image, const std::vector<int> &path)
 {
-    cv::Mat result(image.rows - 1, image.cols, CV_8UC3);
+    cv::Mat result(image.rows - 1, image.cols, image.type());
     for (int y = 0; y < result.rows; ++y)
     {
         for (int x = 0; x < result.cols; ++x)
@@ -24,7 +24,7 @@ cv::Mat remove_path_hori(const cv::Mat &image, const std::vector<int> &path)
 
 cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path)
 {
-    cv::Mat result(image.rows + 1, image.cols, CV_8UC3);
+    cv::Mat result(image.rows + 1, image.cols, image.type());
     for (int y = 0; y < result.rows; ++y)
     {
         for (int x = 0; x < result.cols; ++x)
@@ -60,7 +60,7 @@ cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path)
 
 cv::Mat remove_path_vert(const cv::Mat &image, const std::vector<int> &path)
 {
-    cv::Mat result(image.rows, image.cols - 1, CV_8UC3);
+    cv::Mat result(image.rows, image.cols - 1, image.type());
     for (int y = 0; y < result.rows; ++y)
     {
         for (int x = 0; x < result.cols; ++x)
@@ -92,7 +92,9 @@ cv::Mat sobel_energy(const cv::Mat &gray_image)
     cv::convertScaleAbs(grad_y, grad_abs_y);
     cv::Mat energy_image;
     cv::addWeighted(grad_abs_x, 0.5, grad_abs_y, 0.5, 0.0, energy_image);
-    return energy_image;
+    cv::Mat img_16s;
+    energy_image.convertTo(img_16s, CV_16S, 1.0);
+    return img_16s;
 }
 
 cv::Mat laplacian_energy(const cv::Mat &gray_image)
@@ -101,5 +103,7 @@ cv::Mat laplacian_energy(const cv::Mat &gray_image)
     cv::Laplacian(gray_image, grad, CV_16S, 3);
     cv::Mat grad_abs;
     cv::convertScaleAbs(grad, grad_abs);
-    return grad_abs;
+    cv::Mat img_16s;
+    grad_abs.convertTo(img_16s, CV_16S, 1.0);
+    return img_16s;
 }
