@@ -21,7 +21,6 @@ typedef short energy_t;
 template <typename COMPARE_FUNC = std::less<int> >
 path_result find_hori_seam(const cv::Mat &energy_image,
                            weighted_int_t *buffer = nullptr,
-                           int nth = 0,
                            COMPARE_FUNC cmp = std::less<int>())
 {
     weighted_int_t *dp;
@@ -86,17 +85,7 @@ path_result find_hori_seam(const cv::Mat &energy_image,
 
     // last level: find minimum.
     weighted_int_t *e_min;
-    if (nth == 0)
-    {
-        e_min = std::min_element(current_level + 1, current_level + (energy_image.rows - 1));
-    }
-    else
-    {
-        std::nth_element(current_level + 1,
-                         current_level + (1 + nth),
-                         current_level + (energy_image.rows - 1));
-        e_min = current_level + (1 + nth);
-    }
+    e_min = std::min_element(current_level + 1, current_level + (energy_image.rows - 1));
 
     // backtrace
     std::vector<int> energy_min_path(energy_image.cols);
@@ -184,17 +173,7 @@ path_result find_vert_seam(const cv::Mat &energy_image,
 
     // last level: find minimum.
     weighted_int_t *e_min;
-    if (nth == 0)
-    {
-        e_min = std::min_element(current_level + 1, current_level + (energy_image.cols - 1));
-    }
-    else
-    {
-        std::nth_element(current_level + 1,
-                         current_level + (1 + nth),
-                         current_level + (energy_image.cols - 1));
-        e_min = current_level + (1 + nth);
-    }
+    e_min = std::min_element(current_level + 1, current_level + (energy_image.cols - 1));
 
     // backtrace
     std::vector<int> energy_min_path(energy_image.rows);
@@ -213,10 +192,152 @@ path_result find_vert_seam(const cv::Mat &energy_image,
     return path_result{ std::move(energy_min_path), e_min->weight };
 }
 
-cv::Mat remove_path_hori(const cv::Mat &image, const std::vector<int> &path);
-cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path);
-cv::Mat remove_path_vert(const cv::Mat &image, const std::vector<int> &path);
-// cv::Mat insert_path_vert(const cv::Mat &image, const std::vector<int> &path);
+template <std::size_t CHANNELS, typename TCHANNEL>
+cv::Mat remove_path_hori(const cv::Mat &image, const std::vector<int> &path)
+{
+    cv::Mat result(image.rows - 1, image.cols, image.type());
+    for (int y = 0; y < result.rows; ++y)
+    {
+        for (int x = 0; x < result.cols; ++x)
+        {
+            int img_y = y;
+            if (img_y >= path[x])
+            {
+                ++img_y;
+            }
+            for (int c = 0; c < CHANNELS; ++c)
+            {
+                result.at<TCHANNEL>(y, CHANNELS * x + c) =
+                    image.at<TCHANNEL>(img_y, CHANNELS * x + c);
+            }
+        }
+    }
+    return result;
+}
+
+template <std::size_t CHANNELS, typename TCHANNEL>
+cv::Mat remove_path_vert(const cv::Mat &image, const std::vector<int> &path)
+{
+    cv::Mat result(image.rows, image.cols - 1, image.type());
+    for (int y = 0; y < result.rows; ++y)
+    {
+        for (int x = 0; x < result.cols; ++x)
+        {
+            int img_x = x;
+            if (img_x >= path[y])
+            {
+                ++img_x;
+            }
+            for (int c = 0; c < CHANNELS; ++c)
+            {
+                result.at<TCHANNEL>(y, CHANNELS * x + c) =
+                    image.at<TCHANNEL>(y, CHANNELS * img_x + c);
+            }
+        }
+    }
+    return result;
+}
+
+template <std::size_t CHANNELS, typename TCHANNEL>
+cv::Mat insert_path_hori(const cv::Mat &image, const std::vector<int> &path)
+{
+    cv::Mat result(image.rows + 1, image.cols, image.type());
+    for (int y = 0; y < result.rows; ++y)
+    {
+        for (int x = 0; x < result.cols; ++x)
+        {
+            int img_y = y;
+            if (img_y == path[x] && img_y < image.rows)
+            {
+                for (int c = 0; c < CHANNELS; ++c)
+                {
+                    result.at<TCHANNEL>(y, CHANNELS * x + c) =
+                        static_cast<TCHANNEL>(
+                            (static_cast<int>(image.at<TCHANNEL>(img_y - 1, CHANNELS * x + c)) +
+                                static_cast<int>(image.at<TCHANNEL>(img_y, CHANNELS * x + c))) / 2
+                            );
+                }
+            }
+            else
+            {
+                if (img_y > path[x])
+                {
+                    --img_y;
+                }
+                for (int c = 0; c < CHANNELS; ++c)
+                {
+                    result.at<TCHANNEL>(y, CHANNELS * x + c) =
+                        image.at<TCHANNEL>(img_y, CHANNELS * x + c);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+template <std::size_t CHANNELS, typename TCHANNEL>
+cv::Mat insert_path_vert(const cv::Mat &image, const std::vector<int> &path)
+{
+    cv::Mat result(image.rows, image.cols + 1, image.type());
+    for (int y = 0; y < result.rows; ++y)
+    {
+        for (int x = 0; x < result.cols; ++x)
+        {
+            int img_x = x;
+            if (img_x == path[y] && img_x < image.cols)
+            {
+                for (int c = 0; c < CHANNELS; ++c)
+                {
+                    result.at<TCHANNEL>(y, CHANNELS * x + c) =
+                        static_cast<TCHANNEL>(
+                            (static_cast<int>(image.at<TCHANNEL>(y, CHANNELS * (img_x - 1) + c)) +
+                                static_cast<int>(image.at<TCHANNEL>(y, CHANNELS * img_x + c))) / 2
+                            );
+                }
+            }
+            else
+            {
+                if (img_x > path[y])
+                {
+                    --img_x;
+                }
+                for (int c = 0; c < CHANNELS; ++c)
+                {
+                    result.at<TCHANNEL>(y, CHANNELS * x + c) =
+                        image.at<TCHANNEL>(y, CHANNELS * img_x + c);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+template <std::size_t CHANNELS, typename TCHANNEL>
+void set_path_hori(cv::Mat &image, const std::vector<int> &path,
+                   const std::vector<TCHANNEL> &color)
+{
+    for (int x = 0; x < image.cols; ++x)
+    {
+        for (int c = 0; c < CHANNELS; ++c)
+        {
+            image.at<TCHANNEL>(path[x], CHANNELS * x + c) = color[c];
+        }
+    }
+}
+
+template <std::size_t CHANNELS, typename TCHANNEL>
+void set_path_vert(cv::Mat &image, const std::vector<int> &path,
+                   const std::vector<TCHANNEL> &color)
+{
+    for (int y = 0; y < image.rows; ++y)
+    {
+        for (int c = 0; c < CHANNELS; ++c)
+        {
+            image.at<TCHANNEL>(y, CHANNELS * path[y] + c) = color[c];
+        }
+    }
+}
+
 cv::Mat sobel_energy(const cv::Mat &gray_image);
 cv::Mat laplacian_energy(const cv::Mat &gray_image);
 

@@ -159,11 +159,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="resizing.cpp" />
     <ClCompile Include="seam_carving.cpp" />
+    <ClCompile Include="util.cpp" />
     <ClCompile Include="weighted_value.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resizing.h" />
     <ClInclude Include="seam_carving.h" />
+    <ClInclude Include="util.h" />
     <ClInclude Include="weighted_value.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
