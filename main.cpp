@@ -18,7 +18,7 @@ int main()
     //test_insert();
     //return 0;
 
-    std::string filename = "testcase/5.jpg";
+    std::string filename = "testcase/6.jpg";
     cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
     if (!image.data)
     {
@@ -26,13 +26,14 @@ int main()
         exit(1);
     }
 
-    object_remove(image, load_mask("testcase/5_mask.png"));
+    //object_remove(image, load_mask("testcase/5_mask.png"));
 
     // draw_seam(image, 20, 20, std::vector<unsigned char> {255, 255, 127});
     /*for (int i = 0; i < 2; ++i)
     {
         image_extend(image, 256, 256);
     }*/
+    image_shrink(image, 800, 400);
     
     cv::imwrite(filename + ".result.png", image);
     return 0;

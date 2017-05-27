@@ -68,13 +68,14 @@ void image_extend(cv::Mat &image, int dc, int dr)
 
 void image_shrink(cv::Mat &image, int dc, int dr)
 {
+    cv::Mat gray_image;
+    cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
+
     int r = 0, c = 0;
 
     weighted_int_t *dp_buffer = new weighted_int_t[(image.cols + 1) * (image.rows + 1)];
     while (r + c < dr + dc)
     {
-        cv::Mat gray_image;
-        cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
         cv::Mat energy_image = sobel_energy(gray_image);
 
         if (r + c == 0)
@@ -86,6 +87,7 @@ void image_shrink(cv::Mat &image, int dc, int dr)
         {
             path_result p = find_vert_seam(energy_image, dp_buffer);
             image = remove_path_vert<3, unsigned char>(image, p.path);
+            gray_image = remove_path_vert<1, unsigned char>(gray_image, p.path);
             ++c;
             fprintf(stderr, "|");
         }
@@ -93,23 +95,26 @@ void image_shrink(cv::Mat &image, int dc, int dr)
         {
             path_result p = find_hori_seam(energy_image, dp_buffer);
             image = remove_path_hori<3, unsigned char>(image, p.path);
+            gray_image = remove_path_hori<1, unsigned char>(gray_image, p.path);
             ++r;
             fprintf(stderr, "-");
         }
         else // r != dr && c != dc
         {
             path_result pv = find_vert_seam(energy_image, dp_buffer),
-                ph = find_hori_seam(energy_image, dp_buffer);
+                        ph = find_hori_seam(energy_image, dp_buffer);
             // Ì°ÐÄ
             if (pv.total_energy < ph.total_energy)
             {
                 image = remove_path_vert<3, unsigned char>(image, pv.path);
+                gray_image = remove_path_vert<1, unsigned char>(gray_image, pv.path);
                 ++c;
                 fprintf(stderr, "|");
             }
             else
             {
                 image = remove_path_hori<3, unsigned char>(image, ph.path);
+                gray_image = remove_path_hori<1, unsigned char>(gray_image, ph.path);
                 ++r;
                 fprintf(stderr, "-");
             }
