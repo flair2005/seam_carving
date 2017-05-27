@@ -166,7 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resizing.h" />
-    <ClInclude Include="seam_carving.h" />
+    <ClInclude Include="seam_carving.hpp" />
     <ClInclude Include="util.h" />
     <ClInclude Include="weighted_value.h" />
   </ItemGroup>

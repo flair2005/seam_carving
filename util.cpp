@@ -1,5 +1,5 @@
 #include "util.h"
-#include "seam_carving.h"
+#include "seam_carving.hpp"
 
 cv::Mat load_mask(const std::string &filename)
 {

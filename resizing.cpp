@@ -1,5 +1,5 @@
 #include "resizing.h"
-#include "seam_carving.h"
+#include "seam_carving.hpp"
 
 void image_extend(cv::Mat &image, int dc, int dr)
 {

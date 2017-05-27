@@ -1,4 +1,4 @@
-#include "seam_carving.h"
+#include "seam_carving.hpp"
 
 cv::Mat sobel_energy(const cv::Mat &gray_image)
 {
