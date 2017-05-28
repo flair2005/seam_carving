@@ -47,7 +47,7 @@ main: main.o $(OBJECTS)
 main.o: main.cpp $(HEADERS)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
-%.o: %.cpp %.h
+%.o: %.cpp $(HEADERS)
 	$(CC) $(CC_FLAGS) -o $@ -c $<
 
 .PHONY: clean
