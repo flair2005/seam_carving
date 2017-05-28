@@ -16,6 +16,8 @@ struct path_result
 
 typedef weighted_value<int, int> weighted_int_t;
 typedef short energy_t;
+constexpr energy_t energy_inf = 30000;
+constexpr int energy_cv_type = CV_16S;
 
 // find a horizontal seam whose energy is minimum
 template <typename COMPARE_FUNC = std::less<int> >
@@ -108,7 +110,6 @@ path_result find_hori_seam(const cv::Mat &energy_image,
 template <typename COMPARE_FUNC = std::less<int> >
 path_result find_vert_seam(const cv::Mat &energy_image,
                            weighted_int_t *buffer = nullptr,
-                           int nth = 0,
                            COMPARE_FUNC cmp = std::less<int>())
 {
     weighted_int_t *dp;
@@ -338,7 +339,12 @@ void set_path_vert(cv::Mat &image, const std::vector<int> &path,
     }
 }
 
+typedef cv::Mat (*energy_func_t)(const cv::Mat &gray_image);
+
 cv::Mat sobel_energy(const cv::Mat &gray_image);
+cv::Mat scharr_energy(const cv::Mat &gray_image);
 cv::Mat laplacian_energy(const cv::Mat &gray_image);
+void draw_seam(cv::Mat &image, int nc, int nr,
+               const std::vector<unsigned char> &color, energy_func_t energy_func);
 
 #endif // _SEAM_CARVING_HPP_
