@@ -94,5 +94,5 @@ void draw_seam(cv::Mat &image, int nc, int nr,
             }
         }
     }
-    delete[] dp_buffer;
+    delete [] dp_buffer;
 }

@@ -52,7 +52,7 @@ int main()
     {
         image_extend(image, 256, 256);
     }*/
-    image_resize(image, 600, 860, get_energy_func("sobel"));
+    image_resize(image, 600, 1200, get_energy_func("sobel"));
     
     cv::imwrite(filename + ".result.png", image);
     return 0;
