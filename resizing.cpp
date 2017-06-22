@@ -76,11 +76,6 @@ void image_shrink(cv::Mat &image, int dc, int dr, energy_func_t energy_func)
     {
         cv::Mat energy_image = energy_func(gray_image);
 
-        if (r + c == 0)
-        {
-            cv::imwrite("energy_image.result.png", energy_image);
-        }
-
         if (r == dr) // c != dc
         {
             path_result p = find_vert_seam(energy_image, dp_buffer);
