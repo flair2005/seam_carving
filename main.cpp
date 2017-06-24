@@ -89,7 +89,7 @@ int main()
         cv::imwrite(filename + ".resize_laplacian.png", image);
     }*/
 
-    {
+    /*{
         std::string filename = "testcase/2.png";
         cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
         cv::Mat gray_image;
@@ -98,7 +98,7 @@ int main()
         cv::imwrite("testcase/2.png.energy_sobel.png", energy_image1);
         cv::Mat energy_image2 = get_energy_func("laplacian")(gray_image);
         cv::imwrite("testcase/2.png.energy_laplacian.png", energy_image2);
-    }
+    }*/
 
     /*{
         std::string filename = "testcase/3.jpg";
@@ -127,6 +127,13 @@ int main()
         object_remove(image, load_mask("testcase/5_mask.png"), get_energy_func("sobel"));
         cv::imwrite(filename + ".remove.png", image);
     }*/
+
+    {
+        std::string filename = "testcase/5.jpg";
+        cv::Mat image = cv::imread(filename, cv::IMREAD_COLOR);
+        object_remove(image, load_mask("testcase/5_mask2.png"), get_energy_func("sobel"));
+        cv::imwrite(filename + ".remove2.png", image);
+    }
 
     /*{
         std::string filename = "testcase/6.jpg";
