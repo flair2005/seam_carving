@@ -262,7 +262,9 @@ void object_remove(cv::Mat &image, cv::Mat mask, energy_func_t energy_func)
 
 ## 几个例子
 
-下面是几个例子。注意：原图见`testcase/`。
+下面是几个例子。
+
+注意：除了特别说明的例子，这些例子默认使用的是Sobel算子；这些图片的原图见`testcase/`。
 
 ### 1
 
